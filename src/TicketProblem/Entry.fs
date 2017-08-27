@@ -7,7 +7,7 @@ open System
 [<EntryPoint>]
 let main args = 
     
-    List.iter (fun x -> printfn "%s" x) <| Processor.proc 100 "01000110"
+    List.iter (fun (x,y) -> printfn "%s = %i" x y) <| Processor.proc 100 "123456789"
     Console.ReadKey() |> ignore
     0
 

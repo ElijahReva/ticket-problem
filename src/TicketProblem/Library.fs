@@ -85,8 +85,7 @@ module Processor =
             |> flat 
             |> String.implode)
         |> List.map (fun x -> (x, Parser.eval x))
-        |> List.filter (fun (_,d) -> d = res)
-        |> List.map (fun (v,_) -> v)
+        |> List.filter (fun (_,d) -> d > 80 && d < 120)
 
 
         
