@@ -11,11 +11,31 @@ module String =
         sb.ToString()
 
 module Parser = 
+
     open FParsec
     
+    open FParsec.Error
+    open FParsec.Primitives
+    
+    let pNoZeroFloat : Parser<float, unit> =
+        let parser = numberLiteral NumberLiteralOptions.DefaultFloat "number"
+        fun stream ->
+            let reply = parser stream
+            if reply.Status = Ok then 
+                let nl = reply.Result
+                if nl.String = "0" then
+                    Reply(0.)
+                else if nl.String.StartsWith("0") then
+                    Reply(Error, messageError "Leading Zero")
+                else
+                    Reply(float nl.String)
+                    
+            else
+                Reply(reply.Status, reply.Error)
+
     let ws = spaces
     let str_ws s = pstring s >>. ws
-    let number = pfloat .>> ws
+    let number =  pNoZeroFloat .>> ws
     let opp = new OperatorPrecedenceParser<float, unit, unit>()
     let expr = opp.ExpressionParser
     
@@ -64,13 +84,13 @@ module Processor =
                      let x, y = i
                      (acc @ [ x; y ])) []
 
-    let append xs ys = seq { for x in xs do for y in ys -> Seq.append x y  }
+    let append xs ys = seq { for x in xs do for y in ys -> Seq.append [ x ] y  }
     
-    let proc (res : float) (input : string) = 
+    let procWithCustom (res : float) (input : string) operations = 
         let temp = String.explode input
         operations
         |> permutationsWithRep (input.Length - 1)
-        |> append [[" "];["-"]]
+        |> append ["";"-"]
         |> Seq.map (fun x -> 
                temp
                |> Seq.zip x
@@ -78,5 +98,6 @@ module Processor =
                |> String.implode)
         |> Seq.map (fun x -> (x, Parser.eval x))
         |> Seq.filter (fun (_, d)  -> d = res)
-        |> Seq.map (fun (x, _) -> x)        
-    
+        |> Seq.map (fun (x, _) -> x)    
+
+    let proc (res : float) (input : string) = procWithCustom res input operations

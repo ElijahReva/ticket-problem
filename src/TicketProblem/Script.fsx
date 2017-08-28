@@ -6,12 +6,9 @@
 #load "Library.fs"
 #load "Ticket.fs"
 
-open TicketProblem
+open FParsec
+open FParsec.CharParsers
 
-let num =  "123+34" |> Parser.eval
-printfn "%f" num
-
-let a = TicketProblem.Ticket(100.,"12334")
-
-a.Eval()
+run pfloat "123"
+run pfloat "001"
 
