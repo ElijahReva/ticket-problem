@@ -1,11 +1,17 @@
 // Learn more about F# at http://fsharp.org. See the 'F# Tutorial' project
 // for more guidance on F# programming.
-#r @"E:\work\ticket\packages\FParsec\lib\net40-client\FParsec.dll"
-#r @"E:\work\ticket\packages\FParsec\lib\net40-client\FParsecCS.dll"
+#I @"../../packages/"
+#r @"FParsec\lib\net40-client\FParsecCS.dll"
+#r @"FParsec\lib\net40-client\FParsec.dll"
 #load "Library.fs"
+#load "Ticket.fs"
 
 open TicketProblem
-open FParsec
 
-let num =  "123+34" |> Library.calculate |> Library.value
-printfn "%i" num
+let num =  "123+34" |> Parser.eval
+printfn "%f" num
+
+let a = TicketProblem.Ticket(100.,"12334")
+
+a.Eval()
+
