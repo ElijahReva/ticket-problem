@@ -7,7 +7,7 @@ open System.Linq
 [<Test>]
 let ``proc 100 count`` () =
   let result = Processor.proc 100. "123456789"
-  Assert.AreEqual(101, result.Count())
+  Assert.AreEqual(162, result.Count())
 
 [<Test>]
 let ``eval 1 + 02`` () =
@@ -18,4 +18,4 @@ let ``eval 1 + 02`` () =
 [<Test>]
 let ``proc 10 count`` () =
   let result = Processor.proc 10. "010"
-  Assert.AreEqual(2, result.Count())
+  Assert.AreEqual(3, result.Count())
