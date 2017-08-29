@@ -1,5 +1,6 @@
 FSharp.Core
 fparsec
+Rx-Main
 group Test
 NUnit
 NUnit.Runners

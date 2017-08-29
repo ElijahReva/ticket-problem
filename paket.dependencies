@@ -10,6 +10,10 @@ source https://nuget.org/api/v2
 
 nuget fparsec
 nuget FSharp.Core ~> 4.0.0.1 redirects: force
+nuget MahApps.Metro
+nuget ReactiveUI
+nuget Rx-Main = 2.2.5
+nuget Rx-PlatformServices = 2.2.5
 
 group Build
   source https://nuget.org/api/v2

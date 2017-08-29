@@ -21,7 +21,7 @@ let ``eval 1 + 02 = -1`` () =
 [<Test>]
 let ``eval 1 + 0 + 2 = 3`` () =
   let result = Parser.eval "1 + 0 + 2"
-  result |> is 3
+  result |> is 3.
   
 
 [<Test>]
