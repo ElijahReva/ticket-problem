@@ -25,6 +25,12 @@ let ``proc 2 1001 expect 4`` () =
   let result = Processor.procWithCustom 2. "1001" ["";"+";"-"] |> Seq.toArray
   Assert.AreEqual(4, result.Length)
 
+
+[<Test>]
+let ``proc -2 02 expect 1`` () =
+  let result = Processor.proc -1. "0012" |> Seq.toArray
+  Assert.AreEqual(1, result.Length)
+
 [<Test>]
 let ``proc 2001 in standart expect 2`` () =
   let result = Processor.proc 2001. "123456789" |> Seq.toArray

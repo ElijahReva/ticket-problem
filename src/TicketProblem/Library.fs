@@ -1,4 +1,4 @@
-namespace TicketProblem
+﻿namespace TicketProblem
 
 module String = 
 
@@ -25,7 +25,7 @@ module Parser =
                 let nl = reply.Result
                 if nl.String = "0" then
                     Reply(0.)
-                else if nl.String.StartsWith("0") then
+                else if nl.String.[0] = '0' then
                     Reply(Error, messageError "Leading Zero")
                 else
                     Reply(float nl.String)
@@ -47,22 +47,14 @@ module Parser =
     opp.AddOperator(PrefixOperator("-", ws, 4, true, fun x -> -x))
     
     let completeExpression = ws >>. expr .>> eof
-    let calculate s = run completeExpression s
-    
-    let value r = 
-        match r with
-        | Success(v, _, _) -> v
-        | Failure(_) -> -1.
-    
-    let equals expectedValue r = 
-        match r with
-        | Success(v, _, _) when v = expectedValue -> ()
-        | Success(v, _, _) -> failwith "Math is hard, let's go shopping!"
-        | Failure(msg, err, _) -> 
-            printf "%s" msg
-            failwith msg
-    
-    let eval = calculate >> value
+    let calculate input = run completeExpression input
+    let eval = calculate
+
+    let filter expected result = 
+        match result with 
+        | Success(value,_,_) when value = expected -> true
+        | Success(_) -> false
+        | Failure(_) -> false
 
 module Processor = 
 
@@ -86,7 +78,7 @@ module Processor =
 
     let append xs ys = seq { for x in xs do for y in ys -> Seq.append [ x ] y  }
     
-    let procWithCustom (res : float) (input : string) operations = 
+    let evalAll (res : float) (input : string) operations = 
         let temp = String.explode input
         operations
         |> permutationsWithRep (input.Length - 1)
@@ -97,7 +89,10 @@ module Processor =
                |> flat
                |> String.implode)
         |> Seq.map (fun x -> (x, Parser.eval x))
-        |> Seq.filter (fun (_, d)  -> d = res)
-        |> Seq.map (fun (x, _) -> x)    
+
+    let procWithCustom (expected : float) (input : string) operations = 
+        evalAll expected input operations
+        |> Seq.filter (fun (_, result)  -> Parser.filter expected result)
+        |> Seq.map (fun (expression, _) -> expression)    
 
     let proc (res : float) (input : string) = procWithCustom res input operations
