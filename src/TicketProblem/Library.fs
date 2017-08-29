@@ -78,7 +78,7 @@ module Processor =
 
     let append xs ys = seq { for x in xs do for y in ys -> Seq.append [ x ] y  }
     
-    let evalAll (res : float) (input : string) operations = 
+    let evalAll (input : string) operations = 
         let temp = String.explode input
         operations
         |> permutationsWithRep (input.Length - 1)
@@ -91,8 +91,8 @@ module Processor =
         |> Seq.map (fun x -> (x, Parser.eval x))
 
     let procWithCustom (expected : float) (input : string) operations = 
-        evalAll expected input operations
+        evalAll input operations
         |> Seq.filter (fun (_, result)  -> Parser.filter expected result)
-        |> Seq.map (fun (expression, _) -> expression)    
+        |> Seq.map (fun (expression, _) -> expression)
 
     let proc (res : float) (input : string) = procWithCustom res input operations

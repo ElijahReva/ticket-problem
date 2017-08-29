@@ -3,21 +3,25 @@ module TicketProblem.Tests
 open TicketProblem
 open NUnit.Framework
 open System.Linq
+open FParsec.CharParsers 
 
-[<Test>]
-let ``proc 100 in standart expect 162`` () =
-  let result = Processor.proc 100. "123456789"
-  Assert.AreEqual(162, result.Count())
+let is (expected: float) (result: ParserResult<float,unit>) = function
+    | Success(value,_,_) -> Assert.AreEqual(expected, value)
+    | Failure(error,_,_) -> Assert.Fail(error)
+
+let failed result = function
+    | Success(value,_,_) -> Assert.Fail(sprintf "Should not parsed, but was %f" value)
+    | Failure(error,_,_) -> Assert.Pass(error)
 
 [<Test>]
 let ``eval 1 + 02 = -1`` () =
   let result = Parser.eval "1 + 0002"
-  Assert.AreEqual(-1., result) 
+  result |> failed
 
 [<Test>]
 let ``eval 1 + 0 + 2 = 3`` () =
   let result = Parser.eval "1 + 0 + 2"
-  Assert.AreEqual(3., result) 
+  result |> is 3
   
 
 [<Test>]
@@ -29,7 +33,7 @@ let ``proc 2 1001 expect 4`` () =
 [<Test>]
 let ``proc -2 02 expect 1`` () =
   let result = Processor.proc -1. "0012" |> Seq.toArray
-  Assert.AreEqual(1, result.Length)
+  Assert.AreEqual(6, result.Length)
 
 [<Test>]
 let ``proc 2001 in standart expect 2`` () =
@@ -39,3 +43,10 @@ let ``proc 2001 in standart expect 2`` () =
 
   Assert.AreEqual(5, result.Length)
   Assert.AreEqual(2, ``no -``.Length)
+
+[<Test>]
+let ``proc 100 in standart expect 162`` () =
+  let result = Processor.proc 100. "123456789"
+  Assert.AreEqual(162, result.Count())
+
+
