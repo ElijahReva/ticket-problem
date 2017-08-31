@@ -1,7 +1,6 @@
 ﻿namespace TicketProblem
 
 module String = 
-
     let explode (s : string) = 
         [ for c in s -> c.ToString() ]
     
@@ -11,31 +10,24 @@ module String =
         sb.ToString()
 
 module Parser = 
-
     open FParsec
-    
     open FParsec.Error
     open FParsec.Primitives
     
-    let pNoZeroFloat : Parser<float, unit> =
+    let pNoZeroFloat : Parser<float, unit> = 
         let parser = numberLiteral NumberLiteralOptions.DefaultFloat "number"
-        fun stream ->
+        fun stream -> 
             let reply = parser stream
             if reply.Status = Ok then 
                 let nl = reply.Result
-                if nl.String = "0" then
-                    Reply(0.)
-                else if nl.String.[0] = '0' then
-                    Reply(Error, messageError "Leading Zero")
-                else
-                    Reply(float nl.String)
-                    
-            else
-                Reply(reply.Status, reply.Error)
-
+                if nl.String = "0" then Reply(0.)
+                else if nl.String.[0] = '0' then Reply(Error, messageError "Leading Zero")
+                else Reply(float nl.String)
+            else Reply(reply.Status, reply.Error)
+    
     let ws = spaces
     let str_ws s = pstring s >>. ws
-    let number =  pNoZeroFloat .>> ws
+    let number = pNoZeroFloat .>> ws
     let opp = new OperatorPrecedenceParser<float, unit, unit>()
     let expr = opp.ExpressionParser
     
@@ -49,15 +41,16 @@ module Parser =
     let completeExpression = ws >>. expr .>> eof
     let calculate input = run completeExpression input
     let eval = calculate
-
+    
     let filter expected result = 
-        match result with 
-        | Success(value,_,_) when value = expected -> true
+        match result with
+        | Success(value, _, _) when value = expected -> true
         | Success(_) -> false
         | Failure(_) -> false
 
 module Processor = 
-
+    open System.Threading
+    
     let rec permutationsWithRep m l = 
         seq { 
             if m = 1 then 
@@ -75,25 +68,47 @@ module Processor =
         input |> Seq.fold (fun acc i -> 
                      let x, y = i
                      (acc @ [ x; y ])) []
-
-    let append xs ys = seq { for x in xs do for y in ys -> Seq.append [ x ] y  }
     
-    let evalAll (input : string) operations = 
+    let append xs ys = 
+        seq { 
+            for x in xs do
+                for y in ys -> Seq.append [ x ] y
+        }
+    
+    let foreachc (list: list<'input>) (func: 'input -> 'res) (ctx:CancellationToken) = 
+        let rec foreachc' (list: list<'input>) (func: 'input -> 'res) (ctx:CancellationToken) (result : list<'res>) =
+            match list with            
+            | [] -> result
+            | head::tail -> 
+                if ctx.IsCancellationRequested then
+                    foreachc' [] func ctx result
+                else
+                    foreachc' tail func ctx (result @ [(func head)])
+        foreachc' list func ctx []
+
+
+    let parseHelper s = (s, Parser.eval s) 
+    let eval (token:CancellationToken) (expressions: list<string>) = foreachc expressions parseHelper token
+
+
+    let evalAll (token : CancellationToken) (input : string) operations = 
         let temp = String.explode input
         operations
         |> permutationsWithRep (input.Length - 1)
-        |> append ["";"-"]
+        |> append [ ""; "-" ]
         |> Seq.map (fun x -> 
                temp
                |> Seq.zip x
                |> flat
                |> String.implode)
-        |> Seq.map (fun x -> (x, Parser.eval x))
-
-    let procWithCustom (expected : float) (input : string) operations = 
-        evalAll input operations
-        |> Seq.filter (fun (_, result)  -> Parser.filter expected result)
-        |> Seq.map (fun (expression, _) -> expression)
-
-    let proc (res : float) (input : string) = procWithCustom res input operations
+        |> Seq.toList
+        |> eval token 
     
+    let procWithCustom token (expected : float) (input : string) operations = 
+        evalAll token input operations
+        |> Seq.filter (fun (_, result) -> Parser.filter expected result)
+        |> Seq.map (fun (expression, _) -> expression)
+    
+    let proc (res : float) (input : string) = procWithCustom (CancellationToken()) res input operations
+
+    let procAsync (token : CancellationToken) (res : float) (input : string) = procWithCustom token res input operations

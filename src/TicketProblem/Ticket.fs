@@ -1,13 +1,14 @@
 ﻿namespace TicketProblem
 
 open Processor
-open TicketProblem
-open System.Threading.Tasks
 open System
+open System.Collections.Generic
+open System.Threading
+open TicketProblem
 
 type Ticket() = 
     let mutable results = []
-     
+    
     let eval = 
         lazy (results <- proc 100. "123123" |> Seq.toList
               if results.Length > 0 then true
@@ -19,24 +20,17 @@ type Ticket() =
     
     member this.Eval() = eval.Value
 
-
 type ITicketChecker = 
-    
-    abstract member IsLucky : string -> int -> System.Collections.Generic.IEnumerable<string>    
-
-    abstract member IsLuckyAsync : string -> int -> Task<Ticket>
-
-    abstract member IsLuckyObs : string -> int -> IObservable<Ticket>
+    abstract IsLucky : string -> int -> IEnumerable<string>
+    abstract IsLuckyAsync : string -> int -> CancellationToken -> IEnumerable<string>
+    abstract IsLuckyObs : string -> int -> IObservable<string>
 
 type TicketChecker() = 
-
     interface ITicketChecker with
-
-        member x.IsLucky(number: string) (expected: int): System.Collections.Generic.IEnumerable<string>  = 
+        
+        member x.IsLucky number expected = 
             let f = float expected
             proc f number
-
-
         
-        member x.IsLuckyAsync arg1 arg2 = failwith "Not implemented yet"
-        member x.IsLuckyObs arg1 arg2 = failwith "Not implemented yet"
+        member x.IsLuckyAsync number expected token = procAsync token (float expected) number
+        member x.IsLuckyObs number expected = failwith "Not implemented yet"

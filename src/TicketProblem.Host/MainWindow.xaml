@@ -62,11 +62,17 @@
             <Button
                 Margin="5"
                 Padding="2"
-                Command="{Binding ComputeCommand}"
-                Content="Process" />
+                Command="{Binding ComputeCommandSync}"
+                Content="Sync" />
             <Button
                 Margin="5"
                 Padding="2"
+                Command="{Binding ComputeCommandAsync}"
+                Content="Async" />
+            <Button
+                Margin="5"
+                Padding="2"
+                Command="{Binding CancelCommand}"
                 Content="Cancel" />
         </StackPanel>
     </Grid>

@@ -4,6 +4,7 @@ open TicketProblem
 open NUnit.Framework
 open System.Linq
 open FParsec.CharParsers 
+open System.Threading
 
 let is (expected: float) (result: ParserResult<float,unit>) = function
     | Success(value,_,_) -> Assert.AreEqual(expected, value)
@@ -26,7 +27,7 @@ let ``eval 1 + 0 + 2 = 3`` () =
 
 [<Test>]
 let ``proc 2 1001 expect 4`` () =
-  let result = Processor.procWithCustom 2. "1001" ["";"+";"-"] |> Seq.toArray
+  let result = Processor.procWithCustom (CancellationToken()) 2. "1001" ["";"+";"-"] |> Seq.toArray
   Assert.AreEqual(4, result.Length)
 
 
