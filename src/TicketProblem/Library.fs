@@ -96,3 +96,4 @@ module Processor =
         |> Seq.map (fun (expression, _) -> expression)
 
     let proc (res : float) (input : string) = procWithCustom res input operations
+    
