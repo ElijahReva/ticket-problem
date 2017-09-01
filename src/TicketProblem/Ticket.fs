@@ -1,14 +1,17 @@
 ﻿namespace TicketProblem
 
 open Processor
+open System
+open System.Collections.Generic
+open System.Threading
+open System.Threading.Tasks
 open TicketProblem
 
-type Ticket(expected : float, number : string) = 
+type Ticket() = 
     let mutable results = []
-    let expected = expected
     
     let eval = 
-        lazy (results <- proc expected number |> Seq.toList
+        lazy (results <- proc 100. "123123" |> Seq.toList
               if results.Length > 0 then true
               else false)
     
@@ -17,3 +20,12 @@ type Ticket(expected : float, number : string) =
         results
     
     member this.Eval() = eval.Value
+
+type ITicketChecker = 
+    abstract IsLucky : string -> int -> IEnumerable<string>
+    abstract IsLuckyObs : string -> int -> IObservable<string>
+
+type TicketChecker() = 
+    interface ITicketChecker with
+        member x.IsLucky number expected = proc (float expected) number
+        member x.IsLuckyObs number expected = failwith "Not implemented yet"

@@ -4,6 +4,7 @@ open TicketProblem
 open NUnit.Framework
 open System.Linq
 open FParsec.CharParsers 
+open System.Threading
 
 let is (expected: float) (result: ParserResult<float,unit>) = function
     | Success(value,_,_) -> Assert.AreEqual(expected, value)

@@ -101,6 +101,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TicketProblem\TicketProblem.fsproj">
+      <Project>{ac74b97b-3673-48c5-8a9d-05446e9cdba6}</Project>
+      <Name>TicketProblem</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
