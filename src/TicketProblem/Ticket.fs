@@ -4,6 +4,7 @@ open Processor
 open System
 open System.Collections.Generic
 open System.Threading
+open System.Threading.Tasks
 open TicketProblem
 
 type Ticket() = 
@@ -22,15 +23,9 @@ type Ticket() =
 
 type ITicketChecker = 
     abstract IsLucky : string -> int -> IEnumerable<string>
-    abstract IsLuckyAsync : string -> int -> CancellationToken -> IEnumerable<string>
     abstract IsLuckyObs : string -> int -> IObservable<string>
 
 type TicketChecker() = 
     interface ITicketChecker with
-        
-        member x.IsLucky number expected = 
-            let f = float expected
-            proc f number
-        
-        member x.IsLuckyAsync number expected token = procAsync token (float expected) number
+        member x.IsLucky number expected = proc (float expected) number
         member x.IsLuckyObs number expected = failwith "Not implemented yet"

@@ -39,11 +39,16 @@
             Grid.Column="0"
             Margin="8"
             Orientation="Horizontal">
-            <Label Content="Count" />
+            <Label Content="Count: " />
             <TextBox
                 MinWidth="40"
                 IsReadOnly="True"
                 Text="{Binding Count, Mode=OneWay}" />
+            <Label Content="Elapsed time: " />
+            <TextBox
+                MinWidth="65"
+                IsReadOnly="True"
+                Text="{Binding Elapsed, Mode=OneWay}" />
         </StackPanel>
 
         <StackPanel
@@ -58,7 +63,7 @@
                 Padding="2"
                 controls:TextBoxHelper.SelectAllOnFocus="True"
                 controls:TextBoxHelper.Watermark="Number"
-                Text="{Binding Number, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" />
+                Text="{Binding Number, UpdateSourceTrigger=PropertyChanged}" />
             <Button
                 Margin="5"
                 Padding="2"

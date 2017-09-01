@@ -75,23 +75,8 @@ module Processor =
                 for y in ys -> Seq.append [ x ] y
         }
     
-    let foreachc (list: list<'input>) (func: 'input -> 'res) (ctx:CancellationToken) = 
-        let rec foreachc' (list: list<'input>) (func: 'input -> 'res) (ctx:CancellationToken) (result : list<'res>) =
-            match list with            
-            | [] -> result
-            | head::tail -> 
-                if ctx.IsCancellationRequested then
-                    foreachc' [] func ctx result
-                else
-                    foreachc' tail func ctx (result @ [(func head)])
-        foreachc' list func ctx []
-
-
-    let parseHelper s = (s, Parser.eval s) 
-    let eval (token:CancellationToken) (expressions: list<string>) = foreachc expressions parseHelper token
-
-
-    let evalAll (token : CancellationToken) (input : string) operations = 
+  
+    let evalAll (input : string) operations = 
         let temp = String.explode input
         operations
         |> permutationsWithRep (input.Length - 1)
@@ -102,13 +87,11 @@ module Processor =
                |> flat
                |> String.implode)
         |> Seq.toList
-        |> eval token 
+        |> Seq.map (fun x -> (x, Parser.eval x))  
     
-    let procWithCustom token (expected : float) (input : string) operations = 
-        evalAll token input operations
+    let procWithCustom (expected : float) (input : string) operations = 
+        evalAll input operations
         |> Seq.filter (fun (_, result) -> Parser.filter expected result)
         |> Seq.map (fun (expression, _) -> expression)
     
-    let proc (res : float) (input : string) = procWithCustom (CancellationToken()) res input operations
-
-    let procAsync (token : CancellationToken) (res : float) (input : string) = procWithCustom token res input operations
+    let proc (res : float) (input : string) = procWithCustom res input operations

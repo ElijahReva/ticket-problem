@@ -27,7 +27,7 @@ let ``eval 1 + 0 + 2 = 3`` () =
 
 [<Test>]
 let ``proc 2 1001 expect 4`` () =
-  let result = Processor.procWithCustom (CancellationToken()) 2. "1001" ["";"+";"-"] |> Seq.toArray
+  let result = Processor.procWithCustom 2. "1001" ["";"+";"-"] |> Seq.toArray
   Assert.AreEqual(4, result.Length)
 
 
