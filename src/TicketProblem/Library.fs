@@ -86,7 +86,6 @@ module Processor =
                |> Seq.zip x
                |> flat
                |> String.implode)
-        |> Seq.toList
         |> Seq.map (fun x -> (x, Parser.eval x))  
     
     let procWithCustom (expected : float) (input : string) operations = 

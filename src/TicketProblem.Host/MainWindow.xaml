@@ -44,11 +44,11 @@
                 MinWidth="40"
                 IsReadOnly="True"
                 Text="{Binding Count, Mode=OneWay}" />
-            <Label Content="Elapsed time: " />
+            <Label Content="Elapsed time (s): " />
             <TextBox
                 MinWidth="65"
                 IsReadOnly="True"
-                Text="{Binding Elapsed, Mode=OneWay}" />
+                Text="{Binding Elapsed, StringFormat=mm\\:ss\\.ff, Mode=OneWay}" />
         </StackPanel>
 
         <StackPanel

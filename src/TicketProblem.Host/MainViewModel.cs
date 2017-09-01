@@ -15,7 +15,7 @@
         private readonly ITicketChecker checker = new TicketChecker();
 
         private readonly ObservableAsPropertyHelper<int> count;
-        private readonly ObservableAsPropertyHelper<long> elapsed;
+        private readonly ObservableAsPropertyHelper<TimeSpan> elapsed;
         private readonly DispatcherTimer timer = new DispatcherTimer();
         private readonly Stopwatch sw = new Stopwatch();
 
@@ -48,7 +48,7 @@
         public ReactiveList<string> Output { get; } = new ReactiveList<string>();
 
         public int Count => this.count.Value;
-        public long Elapsed => this.elapsed.Value;
+        public TimeSpan Elapsed => this.elapsed.Value;
         public string Number
         {
             get { return this.number; }
@@ -72,16 +72,13 @@
 
 
 
-        private IObservable<long> CreateTimer()
+        private IObservable<TimeSpan> CreateTimer()
         {
-            return Observable.FromEventPattern(ev => this.timer.Tick += ev, ev => this.timer.Tick -= ev).Select(args =>
-            {
-                if (!this.sw.IsRunning)
-                {
-                    return 0;
-                }
-                return this.sw.ElapsedMilliseconds / 1000;
-            });
+            return Observable
+                .FromEventPattern(
+                    ev => this.timer.Tick += ev,
+                    ev => this.timer.Tick -= ev)
+                .Select(args => !this.sw.IsRunning ? TimeSpan.Zero : this.sw.Elapsed);
         }
 
         private async Task LoadAsync()
