@@ -6,9 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:host="clr-namespace:TicketProblem.Host"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
-    Width="450"
-    Height="600"
+    Title="Ticket Checker"
+    MinWidth="550"
+    MinHeight="500"
     d:DataContext="{d:DesignInstance host:MainViewModel,
                                      d:IsDesignTimeCreatable=True}"
     BorderBrush="{DynamicResource AccentColorBrush}"
@@ -39,31 +39,48 @@
             Grid.Column="0"
             Margin="8"
             Orientation="Horizontal">
-            <Label Content="Count: " />
+            <Label Content="Count -&gt; " />
             <TextBox
                 MinWidth="40"
                 IsReadOnly="True"
                 Text="{Binding Count, Mode=OneWay}" />
-            <Label Content="Elapsed time (s): " />
+            <Label Content="Elapsed time -&gt; " />
             <TextBox
                 MinWidth="65"
                 IsReadOnly="True"
                 Text="{Binding Elapsed, StringFormat=mm\\:ss\\.ff, Mode=OneWay}" />
+
+            <Label Content="Total combintaions -&gt; " />
+            <TextBox
+                MinWidth="65"
+                IsReadOnly="True"
+                Text="{Binding TotalCombinations, Mode=OneWay}" />
         </StackPanel>
 
         <StackPanel
             Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="1"
-            Width="100"
+            Width="115"
             Margin="7"
             Orientation="Vertical">
-            <TextBox
+            <controls:NumericUpDown
                 Margin="5"
                 Padding="2"
                 controls:TextBoxHelper.SelectAllOnFocus="True"
+                controls:TextBoxHelper.UseFloatingWatermark="True"
                 controls:TextBoxHelper.Watermark="Number"
-                Text="{Binding Number, UpdateSourceTrigger=PropertyChanged}" />
+                HideUpDownButtons="True"
+                Value="{Binding Number, UpdateSourceTrigger=PropertyChanged}" />
+            <controls:NumericUpDown
+                Margin="5"
+                Padding="2"
+                controls:TextBoxHelper.SelectAllOnFocus="True"
+                controls:TextBoxHelper.UseFloatingWatermark="True"
+                controls:TextBoxHelper.Watermark="Expected"
+                HideUpDownButtons="True"
+                Value="{Binding Expected, UpdateSourceTrigger=PropertyChanged}" />
+
             <Button
                 Margin="5"
                 Padding="2"

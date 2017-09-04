@@ -24,8 +24,12 @@ type Ticket() =
 type ITicketChecker = 
     abstract IsLucky : string -> int -> IEnumerable<string>
     abstract IsLuckyObs : string -> int -> IObservable<string>
+    abstract TotalCombinations : int -> int
+    abstract TotalCombinationsObs : int -> IObservable<int>
 
 type TicketChecker() = 
     interface ITicketChecker with
+        member x.TotalCombinations length = Processor.getcomb length
         member x.IsLucky number expected = proc (float expected) number
         member x.IsLuckyObs number expected = failwith "Not implemented yet"
+        member x.TotalCombinationsObs n = failwith "Not implemented yet"

@@ -39,8 +39,7 @@ module Parser =
     opp.AddOperator(PrefixOperator("-", ws, 4, true, fun x -> -x))
     
     let completeExpression = ws >>. expr .>> eof
-    let calculate input = run completeExpression input
-    let eval = calculate
+    let eval input = run completeExpression input
     
     let filter expected result = 
         match result with
@@ -49,7 +48,6 @@ module Parser =
         | Failure(_) -> false
 
 module Processor = 
-    open System.Threading
     
     let rec permutationsWithRep m l = 
         seq { 
@@ -94,3 +92,22 @@ module Processor =
         |> Seq.map (fun (expression, _) -> expression)
     
     let proc (res : float) (input : string) = procWithCustom res input operations
+
+    let (./.) x y = 
+        (x |> double) / (y |> double) |> int
+
+    let choose n k = 
+        let rec choose' n k = 
+            match k with 
+            | 0 -> 1
+            | k when k > n ./. 2 -> choose' n (n-k)
+            | k -> n * (choose' (n-1) (k-1)) ./. k
+        choose' (max n k) (min n k)
+
+    let combWithRep n k = 
+        choose (n + k - 1) k     
+
+    let getcomb n = combWithRep n operations.Length
+    
+
+    
