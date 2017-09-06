@@ -94,6 +94,16 @@
             <Button
                 Margin="5"
                 Padding="2"
+                Command="{Binding ComputeParallel}"
+                Content="Parallel eval" />
+            <Button
+                Margin="5"
+                Padding="2"
+                Command="{Binding ComputeAsObservable}"
+                Content="Observable" />
+            <Button
+                Margin="5"
+                Padding="2"
                 Command="{Binding CancelCommand}"
                 Content="Cancel" />
         </StackPanel>

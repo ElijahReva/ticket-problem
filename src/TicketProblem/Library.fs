@@ -73,8 +73,7 @@ module Processor =
                 for y in ys -> Seq.append [ x ] y
         }
     
-  
-    let evalAll (input : string) operations = 
+    let getallexpr input operations = 
         let temp = String.explode input
         operations
         |> permutationsWithRep (input.Length - 1)
@@ -84,6 +83,11 @@ module Processor =
                |> Seq.zip x
                |> flat
                |> String.implode)
+  
+    let getall number = getallexpr number operations
+    
+    let evalAll (input : string) operations = 
+        getallexpr input operations
         |> Seq.map (fun x -> (x, Parser.eval x))  
     
     let procWithCustom (expected : float) (input : string) operations = 
