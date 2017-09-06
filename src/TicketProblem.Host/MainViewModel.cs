@@ -78,14 +78,14 @@
 
         public int Number
         {
-            get => this.number;
-            set => this.RaiseAndSetIfChanged(ref this.number, value);
+            get { return this.number; }
+            set { this.RaiseAndSetIfChanged(ref this.number, value); }
         }
 
         public int Expected
         {
-            get => this.expected;
-            set => this.RaiseAndSetIfChanged(ref this.expected, value);
+            get { return this.expected; }
+            set { this.RaiseAndSetIfChanged(ref this.expected, value); }
         }
 
         private void Load()
