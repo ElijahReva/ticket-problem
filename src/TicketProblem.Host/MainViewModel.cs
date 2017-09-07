@@ -10,11 +10,13 @@
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Threading;
+    using MahApps.Metro.Controls.Dialogs;
     using ReactiveUI;
 
     public class MainViewModel : ReactiveObject
     {
         private readonly ITicketChecker checker = new TicketChecker();
+        private readonly IDialogCoordinator dialogs = DialogCoordinator.Instance;
         private readonly ObservableAsPropertyHelper<int> count;
         private readonly ObservableAsPropertyHelper<int> totalCombintaions;
         private readonly ObservableAsPropertyHelper<TimeSpan> elapsed;
@@ -44,10 +46,7 @@
             this.ComputeAsObservable.ThrownExceptions.Subscribe(this.HandleError);
 
             this.CancelCommand =
-                ReactiveCommand.Create(() =>
-                    {
-                        this.cts.Cancel();
-                    });
+                ReactiveCommand.Create(() => { this.cts.Cancel(); });
 
             this.count = this.Output.CountChanged.ToProperty(this, vm => vm.Count);
             this.elapsed = this.CreateTimer().ToProperty(this, vm => vm.Elapsed);
@@ -96,7 +95,6 @@
             var result = this.checker.IsLucky(this.number.ToString(), this.expected).ToArray();
 
 
-
             using (this.Output.SuppressChangeNotifications())
             {
                 this.Output.Clear();
@@ -110,13 +108,83 @@
             this.CheckStopwatch?.Invoke(null, null);
         }
 
+        private async Task LoadAsync()
+        {
+            var mySettings = new MetroDialogSettings()
+            {
+                NegativeButtonText = "Stop",
+                AnimateShow = false,
+                AnimateHide = false,
+                ColorScheme = MetroDialogColorScheme.Accented
+            };
+
+            var controller = await this.dialogs.ShowProgressAsync(this, "Processing", "Generating all expressions", true, mySettings);
+            controller.Canceled += (sender, args) => this.cts.Cancel();
+            controller.SetIndeterminate();
+
+            this.Output.Clear();
+
+            this.timer.Start();
+            this.sw.Restart();
+
+            var expressions = await Task.Run(() => this.checker.GetAllExpressions(this.Number.ToString()).TakeWhile(_ => !this.cts.IsCancellationRequested).ToArray());
+
+            controller.Minimum = 0;
+            controller.Maximum = expressions.Length;
+            var i = 0;
+            var tasks = new List<Task>();
+            foreach (var expr in expressions)
+            {
+                var task = Task.Factory.StartNew(() =>
+                    {
+                        if (!this.cts.IsCancellationRequested && this.checker.EvalAndCheck(expr, this.Expected))
+                        {
+                            DispatchService.Invoke(() =>
+                            {
+                                this.Output.Add(expr);
+                                controller.SetProgress(i++);
+                                controller.SetMessage($"Expressions founded: {i}");
+                            });
+                        }
+                    },
+                    this.cts.Token);
+                tasks.Add(task);
+            }
+
+            await Task.Factory.ContinueWhenAll(tasks.ToArray(), r =>
+            {
+                this.sw.Stop();
+                this.timer.Stop();
+
+                this.cts = new CancellationTokenSource();
+            });
+
+            await controller.CloseAsync();
+        }
+
         private async Task LoadParallel()
         {
+
+            var mySettings = new MetroDialogSettings()
+            {
+                NegativeButtonText = "Stop",
+                AnimateShow = false,
+                AnimateHide = false,
+                ColorScheme = MetroDialogColorScheme.Accented
+            };
+
+            var controller = await this.dialogs.ShowProgressAsync(this, "Processing", "Generating all expressions", true, mySettings);
+            controller.Canceled += (sender, args) => this.cts.Cancel();
+            controller.SetIndeterminate();
+
             this.Output.Clear();
 
 
             await Task.Run(async () =>
             {
+                controller.Minimum = 0;
+                controller.Maximum = this.TotalCombinations;
+                var i = 0;
                 this.timer.Start();
                 this.sw.Restart();
                 var tasks = new List<Task>();
@@ -132,6 +200,8 @@
                                     DispatchService.Invoke(() =>
                                     {
                                         this.Output.Add(expr);
+                                        controller.SetProgress(i++);
+                                        controller.SetMessage($"Expressions founded: {i}");
                                     });
                                 }
                             },
@@ -148,7 +218,6 @@
                 }
                 else
                 {
-
                     await Task.Factory.ContinueWhenAll(tasks.ToArray(), r =>
                     {
                         this.sw.Stop();
@@ -158,45 +227,26 @@
                     });
                 }
             }, this.cts.Token);
+
+            await controller.CloseAsync();
         }
 
-        private async Task LoadAsync()
+        private async Task LoadObservable()
         {
-            this.Output.Clear();
-
-            this.timer.Start();
-            this.sw.Restart();
-
-            var expressions = await Task.Run(() => this.checker.GetAllExpressions(this.Number.ToString()).ToArray());
-
-            var tasks = new List<Task>();
-            foreach (var expr in expressions)
+            var mySettings = new MetroDialogSettings()
             {
-                var task = Task.Factory.StartNew(() =>
-                {
-                    if (!this.cts.IsCancellationRequested && this.checker.EvalAndCheck(expr, this.Expected))
-                    {
-                        DispatchService.Invoke(() =>
-                        {
-                            this.Output.Add(expr);
-                        });
-                    }
-                },
-                this.cts.Token);
-                tasks.Add(task);
-            }
+                NegativeButtonText = "Stop",
+                AnimateShow = false,
+                AnimateHide = false,
+                ColorScheme = MetroDialogColorScheme.Accented
+            };
 
-            await Task.Factory.ContinueWhenAll(tasks.ToArray(), r =>
-            {
-                this.sw.Stop();
-                this.timer.Stop();
+            var controller = await this.dialogs.ShowProgressAsync(this, "Processing", "Generating all expressions", true, mySettings);
+            controller.Canceled += (sender, args) => this.cts.Cancel();
+            controller.Minimum = 0;
+            controller.Maximum = this.TotalCombinations;
+            var j = 0;
 
-                this.cts = new CancellationTokenSource();
-            });
-        }
-
-        private void LoadObservable()
-        {
             this.Output.Clear();
 
             this.timer.Start();
@@ -209,13 +259,19 @@
                 .SubscribeOn(RxApp.TaskpoolScheduler)
                 .TakeWhile(_ => !this.cts.Token.IsCancellationRequested)
                 .Subscribe(
-                i => this.Output.Add(i),
-                () =>
-                {
-                    this.sw.Stop();
-                    this.timer.Stop();
-                    this.cts = new CancellationTokenSource();
-                });
+                    i =>
+                    {
+                        this.Output.Add(i);
+                        controller.SetProgress(j++);
+                        controller.SetMessage($"Expressions founded: {j}");
+                    },
+                    async () =>
+                    {
+                        this.sw.Stop();
+                        this.timer.Stop();
+                        this.cts = new CancellationTokenSource();
+                        await controller.CloseAsync();
+                    });
         }
 
         private void HandleError(Exception ex) => this.Output.Add(ex.ToString());
@@ -227,7 +283,7 @@
             .Merge(Observable.FromEventPattern(
                 ev => this.CheckStopwatch += ev,
                 ev => this.CheckStopwatch -= ev
-                ))
+            ))
             .Select(args => this.sw.Elapsed);
     }
 

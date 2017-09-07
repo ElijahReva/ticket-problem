@@ -4,17 +4,32 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialogs="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
     xmlns:host="clr-namespace:TicketProblem.Host"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Ticket Checker"
     MinWidth="550"
     MinHeight="500"
     d:DataContext="{d:DesignInstance host:MainViewModel,
                                      d:IsDesignTimeCreatable=True}"
+    dialogs:DialogParticipation.Register="{Binding}"
     BorderBrush="{DynamicResource AccentColorBrush}"
     BorderThickness="2"
     SaveWindowPosition="True"
     mc:Ignorable="d">
+
+    <controls:MetroWindow.RightWindowCommands>
+        <controls:WindowCommands ShowLastSeparator="False">
+            <Button Click="LaunchOnGitHub" ToolTip="MahApps.Metro on GitHub">
+                <iconPacks:PackIconModern
+                    Width="22"
+                    Height="22"
+                    Kind="SocialGithubOctocat" />
+            </Button>
+        </controls:WindowCommands>
+    </controls:MetroWindow.RightWindowCommands>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />

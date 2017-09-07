@@ -5,6 +5,7 @@ NUGET
       FSharp.Core (>= 4.0.0.1)
     FSharp.Core (4.0.0.1) - redirects: force
     MahApps.Metro (1.5)
+    MahApps.Metro.IconPacks.Modern (1.9)
     reactiveui (7.4)
       reactiveui-core (7.4)
     reactiveui-core (7.4)
