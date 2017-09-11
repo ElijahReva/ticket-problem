@@ -1,41 +1,31 @@
 ﻿namespace TicketProblem
 
-open Parser
 open Processor
+open Model
 open System
 open System.Collections.Generic
-open System.Threading
-open System.Threading.Tasks
 open TicketProblem
 open System.Reactive.Linq
-
-type Ticket() = 
-    let mutable results = []
-    
-    let eval = 
-        lazy (results <- proc 100. "123123" |> Seq.toList
-              if results.Length > 0 then true
-              else false)
-    
-    member this.Results = 
-        this.Eval() |> ignore
-        results
-    
-    member this.Eval() = eval.Value
 
 type ITicketChecker = 
     abstract IsLucky : string -> int -> IEnumerable<string>
     abstract IsLuckyObs : string -> int -> IObservable<string>
-    abstract TotalCombinations : int -> int
-    abstract TotalCombinationsObs : int -> IObservable<int>
+    abstract TotalCombinations : string -> int
+    abstract TotalCombinationsObs : string -> IObservable<int>
 
     abstract GetAllExpressions : string -> IEnumerable<string>
     abstract EvalAndCheck : string -> int -> bool
+
+    abstract Operations : IEnumerable<OperatorMapping>
+    abstract Process : int -> IEnumerable<OperatorMapping> -> IEnumerable<Result>
     
 
 type TicketChecker() = 
     
     interface ITicketChecker with
+        member this.Operations = Model.operatorsSeq
+        member this.Process number choosedOperations = failwith "Not implemented yet" 
+        
         member this.EvalAndCheck expression expected = Parser.eval expression |> Parser.filter (float expected)
         member this.GetAllExpressions number = Processor.getall number
 

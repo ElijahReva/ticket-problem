@@ -52,6 +52,8 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <Import Project="..\..\.paket\paket.targets" />
   <ItemGroup>
+    <Compile Include="Model.fs" />
+    <Compile Include="Parser.fs" />
     <Compile Include="Library.fs" />
     <Compile Include="Ticket.fs" />
     <None Include="Script.fsx" />

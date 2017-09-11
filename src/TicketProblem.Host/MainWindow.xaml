@@ -21,7 +21,7 @@
 
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands ShowLastSeparator="False">
-            <Button Click="LaunchOnGitHub" ToolTip="MahApps.Metro on GitHub">
+            <Button Click="LaunchOnGitHub" ToolTip="View on GitHub">
                 <iconPacks:PackIconModern
                     Width="22"
                     Height="22"
@@ -95,6 +95,23 @@
                 controls:TextBoxHelper.Watermark="Expected"
                 HideUpDownButtons="True"
                 Value="{Binding Expected, UpdateSourceTrigger=PropertyChanged}" />
+
+            <ComboBox
+                Margin="5"
+                Padding="2"
+                IsEditable="True"
+                IsReadOnly="True"
+                ItemsSource="{Binding Operations}"
+                Text="{Binding OperationsHeader, Mode=OneWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type host:OperationViewModel}">
+                        <CheckBox
+                            Margin="1"
+                            Content="{Binding Model}"
+                            IsChecked="{Binding Selected}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
 
             <Button
                 Margin="5"

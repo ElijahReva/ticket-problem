@@ -8,7 +8,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
-    using System.Windows.Controls;
     using System.Windows.Threading;
     using MahApps.Metro.Controls.Dialogs;
     using ReactiveUI;
@@ -17,10 +16,12 @@
     {
         private readonly ITicketChecker checker = new TicketChecker();
         private readonly IDialogCoordinator dialogs = DialogCoordinator.Instance;
+        private readonly ObservableAsPropertyHelper<string> operationHeader;
+        private HashSet<OperatorMapping> selectedOperator = new HashSet<OperatorMapping>();
         private readonly ObservableAsPropertyHelper<int> count;
         private readonly ObservableAsPropertyHelper<int> totalCombintaions;
         private readonly ObservableAsPropertyHelper<TimeSpan> elapsed;
-        public event EventHandler CheckStopwatch;
+        private event EventHandler CheckStopwatch;
         private readonly DispatcherTimer timer = new DispatcherTimer();
         private readonly Stopwatch sw = new Stopwatch();
 
@@ -53,8 +54,46 @@
 
             this.totalCombintaions = this.WhenAnyValue(vm => vm.Number)
                 .Throttle(TimeSpan.FromMilliseconds(350))
-                .Select(n => this.checker.TotalCombinations(n.ToString().Length))
+                .Select(n => this.checker.TotalCombinations(n.ToString()))
                 .ToProperty(this, vm => vm.TotalCombinations);
+
+            this.Operations = new ReactiveList<OperationViewModel>()
+            {
+                ChangeTrackingEnabled = true
+            };
+
+            this.operationHeader =
+                this.Operations.ItemChanged
+                .Where(i => i.PropertyName == nameof(OperationViewModel.Selected))
+                .Select(i => i.Sender)
+                .Merge(this.Operations.ItemsAdded)
+                .Do(v =>
+                    {
+                        if (v.Selected)
+                        {
+                            this.selectedOperator.Add(v.Model);
+                        }
+                        else
+                        {
+                            this.selectedOperator.Remove(v.Model);
+                        }
+                    })
+                .Select(_ =>
+                    {
+                        switch (this.selectedOperator.Count)
+                        {
+                            case 0:
+                                return "<none>";
+                            case 1:
+                                return this.selectedOperator.First().description;                                
+                            default:
+                                return "<multiple>";
+                                
+                        }
+                    })
+                .ToProperty(this, vm => vm.OperationsHeader);
+
+            this.Operations.AddRange(this.checker.Operations.Select(m => new OperationViewModel(m)));
         }
 
         public ReactiveCommand ComputeCommandSync { get; }
@@ -68,6 +107,10 @@
         public ReactiveCommand CancelCommand { get; }
 
         public ReactiveList<string> Output { get; } = new ReactiveList<string>();
+
+        public ReactiveList<OperationViewModel> Operations { get; } 
+
+        public string OperationsHeader => this.operationHeader.Value;
 
         public TimeSpan Elapsed => this.elapsed.Value;
 
