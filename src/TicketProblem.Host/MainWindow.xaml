@@ -107,7 +107,7 @@
                     <DataTemplate DataType="{x:Type host:OperationViewModel}">
                         <CheckBox
                             Margin="1"
-                            Content="{Binding Model}"
+                            Content="{Binding Model.description}"
                             IsChecked="{Binding Selected}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>

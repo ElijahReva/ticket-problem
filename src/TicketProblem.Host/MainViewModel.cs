@@ -85,10 +85,10 @@
                             case 0:
                                 return "<none>";
                             case 1:
-                                return this.selectedOperator.First().description;                                
+                                return this.selectedOperator.First().description;
                             default:
-                                return "<multiple>";
-                                
+                                return string.Join(" ", this.selectedOperator.Select(o => o.trigger));
+
                         }
                     })
                 .ToProperty(this, vm => vm.OperationsHeader);
@@ -108,7 +108,7 @@
 
         public ReactiveList<string> Output { get; } = new ReactiveList<string>();
 
-        public ReactiveList<OperationViewModel> Operations { get; } 
+        public ReactiveList<OperationViewModel> Operations { get; }
 
         public string OperationsHeader => this.operationHeader.Value;
 
