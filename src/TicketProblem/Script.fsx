@@ -6,6 +6,8 @@
 #r @"Rx-Core\lib\net45\System.Reactive.Core.dll"
 #r @"Rx-Linq\lib\net45\System.Reactive.Linq.dll"
 #r @"Rx-Interfaces\lib\net45\System.Reactive.Interfaces.dll"
+#load "Model.fs"
+#load "Parser.fs"
 #load "Library.fs"
 #load "Ticket.fs"
 

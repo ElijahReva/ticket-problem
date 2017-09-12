@@ -8,6 +8,7 @@
     xmlns:host="clr-namespace:TicketProblem.Host"
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ticketProblem="clr-namespace:TicketProblem;assembly=TicketProblem"
     Title="Ticket Checker"
     MinWidth="550"
     MinHeight="500"
@@ -32,8 +33,8 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -46,7 +47,29 @@
             BorderBrush="DarkGray"
             BorderThickness="2"
             CornerRadius="4">
-            <ListBox ItemsSource="{Binding Output}" />
+            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding Output}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type ticketProblem:Result}">
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Margin="5,2"
+                                Text="{Binding expression}" />
+
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="10,2"
+                                HorizontalAlignment="Right"
+                                Text="{Binding evaluated}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+
+            </ListBox>
         </Border>
 
         <StackPanel
@@ -76,7 +99,6 @@
             Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="1"
-            Width="115"
             Margin="7"
             Orientation="Vertical">
             <controls:NumericUpDown
@@ -105,10 +127,18 @@
                 Text="{Binding OperationsHeader, Mode=OneWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type host:OperationViewModel}">
-                        <CheckBox
-                            Margin="1"
-                            Content="{Binding Model.description}"
-                            IsChecked="{Binding Selected}" />
+                        <DockPanel
+                            HorizontalAlignment="Stretch"
+                            Background="Orange"
+                            LastChildFill="True">
+                            <CheckBox
+                                Margin="1"
+                                Content="{Binding Model.description, Mode=OneWay}"
+                                DockPanel.Dock="Left"
+                                IsChecked="{Binding Selected}" />
+                        </DockPanel>
+
+
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
@@ -133,6 +163,11 @@
                 Padding="2"
                 Command="{Binding ComputeAsObservable}"
                 Content="Observable" />
+            <Button
+                Margin="5"
+                Padding="2"
+                Command="{Binding ComputeNew}"
+                Content="New age" />
             <Button
                 Margin="5"
                 Padding="2"

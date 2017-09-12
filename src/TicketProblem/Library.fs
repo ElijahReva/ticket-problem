@@ -48,15 +48,23 @@ module Processor =
                |> String.implode)
   
     let getall number = getallexpr number operations
+
+   
     
     let evalAll (input : string) operations = 
         getallexpr input operations
         |> Seq.map (fun x -> (x, Parser.eval x))  
+
+    let getallbyop (number: int) (operators : OperatorMapping seq) = 
+        let numberStr = number.ToString()
+        let operatorsStr = operators |> Seq.map (fun x -> x.trigger)
+        evalAll numberStr operatorsStr
+        |> Seq.map (fun (expression, result) -> { operators = Seq.empty; expression = expression; evaluated = Parser.getValue result })
     
     let procWithCustom (expected : float) (input : string) operations = 
         evalAll input operations
         |> Seq.filter (fun (_, result) -> Parser.filter expected result)
-        |> Seq.map (fun (expression, _) -> expression)
+        |> Seq.map (fun (expression, result) -> { operators = Seq.empty; expression = expression; evaluated = Parser.getValue result })
     
     let proc (res : float) (input : string) = procWithCustom res input operations
 

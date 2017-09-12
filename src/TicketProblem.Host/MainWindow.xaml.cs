@@ -1,6 +1,7 @@
 ﻿namespace TicketProblem.Host
 {
     using System.Windows;
+    using System.Windows.Input;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml

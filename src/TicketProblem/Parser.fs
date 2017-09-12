@@ -41,3 +41,8 @@ module Parser =
         | Success(value, _, _) when value = expected -> true
         | Success(_) -> false
         | Failure(_) -> false
+
+    let getValue result = 
+        match result with
+        | Success(value, _, _) -> value
+        | Failure(_) -> 0.
