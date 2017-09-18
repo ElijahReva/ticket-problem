@@ -52,12 +52,12 @@ module Processor =
    
     
     let evalAll (input : string) operations = 
-        getallexpr input operations
+       getallexpr input operations
         |> Seq.map (fun x -> (x, Parser.eval x))  
 
     let getallbyop (number: int) (operators : OperatorMapping seq) = 
         let numberStr = number.ToString()
-        let operatorsStr = operators |> Seq.map (fun x -> x.trigger)
+        let operatorsStr = operators |> Seq.map (fun x -> x.trigger) |> Seq.append <| Seq.singleton ""
         evalAll numberStr operatorsStr
         |> Seq.map (fun (expression, result) -> { operators = Seq.empty; expression = expression; evaluated = Parser.getValue result })
     
@@ -82,7 +82,7 @@ module Processor =
     let combWithRep n k = 
         choose (n + k - 1) k     
 
-    let getcomb (str: string) = (str |> Seq.length ) - 1 |> pown operations.Length  |> (*) 2
+    let getcomb (length, count) = length  - 1 |> pown (count + 1) |> (*) 2
     
 
     

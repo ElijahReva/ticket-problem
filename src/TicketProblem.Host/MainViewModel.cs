@@ -16,8 +16,9 @@
     {
         private readonly ITicketChecker checker = new TicketChecker();
         private readonly IDialogCoordinator dialogs = DialogCoordinator.Instance;
+        private readonly HashSet<OperatorMapping> selectedOperator = new HashSet<OperatorMapping>();
+
         private readonly ObservableAsPropertyHelper<string> operationHeader;
-        private HashSet<OperatorMapping> selectedOperator = new HashSet<OperatorMapping>();
         private readonly ObservableAsPropertyHelper<int> count;
         private readonly ObservableAsPropertyHelper<int> totalCombintaions;
         private readonly ObservableAsPropertyHelper<TimeSpan> elapsed;
@@ -29,6 +30,10 @@
         private int expected = 100;
 
         private CancellationTokenSource cts = new CancellationTokenSource();
+
+        private bool outputAll = false;
+        private bool useDialogs = true;
+        private bool appendMinus = true;
 
         public MainViewModel()
         {
@@ -55,21 +60,19 @@
             this.count = this.Output.CountChanged.ToProperty(this, vm => vm.Count);
             this.elapsed = this.CreateTimer().ToProperty(this, vm => vm.Elapsed);
 
-            this.totalCombintaions = this.WhenAnyValue(vm => vm.Number)
-                .Throttle(TimeSpan.FromMilliseconds(350))
-                .Select(n => this.checker.TotalCombinations(n.ToString()))
-                .ToProperty(this, vm => vm.TotalCombinations);
 
             this.Operations = new ReactiveList<OperationViewModel>()
             {
                 ChangeTrackingEnabled = true
             };
 
-            this.operationHeader =
-                this.Operations.ItemChanged
+            var observable = this.Operations.ItemChanged
                 .Where(i => i.PropertyName == nameof(OperationViewModel.Selected))
                 .Select(i => i.Sender)
-                .Merge(this.Operations.ItemsAdded)
+                .Merge(this.Operations.ItemsAdded);
+
+            this.operationHeader =
+                observable
                 .Do(v =>
                     {
                         if (v.Selected)
@@ -96,6 +99,11 @@
                     })
                 .ToProperty(this, vm => vm.OperationsHeader);
 
+            this.totalCombintaions = this.WhenAnyValue(vm => vm.Number)
+                .Merge(observable.Select(vm => 0))
+                .Throttle(TimeSpan.FromMilliseconds(350))
+                .Select(n => this.checker.TotalCombinations(this.Number.ToString().Length, this.selectedOperator.Count))
+                .ToProperty(this, vm => vm.TotalCombinations);
             this.Operations.AddRange(this.checker.Operations.Select(m => new OperationViewModel(m)));
         }
 
@@ -133,6 +141,24 @@
         {
             get { return this.expected; }
             set { this.RaiseAndSetIfChanged(ref this.expected, value); }
+        }
+
+        public bool OutputAll
+        {
+            get { return this.outputAll; }
+            set { this.RaiseAndSetIfChanged(ref this.outputAll, value); }
+        }
+
+        public bool UseDialogs
+        {
+            get { return this.useDialogs; }
+            set { this.RaiseAndSetIfChanged(ref this.useDialogs, value); }
+        }
+
+        public bool AppendMinus
+        {
+            get { return this.appendMinus; }
+            set { this.RaiseAndSetIfChanged(ref this.appendMinus, value); }
         }
 
         private void Load()

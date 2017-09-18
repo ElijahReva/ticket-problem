@@ -142,7 +142,24 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+            <CheckBox
+                Margin="5"
+                Padding="2"
+                Content="Output All"
+                IsChecked="{Binding OutputAll}" />
 
+            <CheckBox
+                Margin="5"
+                Padding="2"
+                Content="Use dialogs"
+                IsChecked="{Binding UseDialogs}"
+                IsEnabled="False" />
+            <CheckBox
+                Margin="5"
+                Padding="2"
+                Content="Output All"
+                IsChecked="{Binding AppendMinus}"
+                IsEnabled="False" />
             <Button
                 Margin="5"
                 Padding="2"

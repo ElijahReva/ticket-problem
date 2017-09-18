@@ -42,7 +42,7 @@ let ``proc -2 02 expect 1`` () =
 let ``proc 2001 in standart expect 2`` () =
   let result = Processor.proc 2001. "123456789" |> Seq.toArray
   let ``no -`` = result
-                    |> Array.filter (fun x -> not <| x.StartsWith("-"))
+                    |> Array.filter (fun x -> not <| x.expression.StartsWith("-"))
 
   Assert.AreEqual(5, result.Length)
   Assert.AreEqual(2, ``no -``.Length)
@@ -56,5 +56,5 @@ let ``proc 100 in standart expect 162`` () =
 let ``getcomb equal length of seq`` () =
     let input = "123456789"
     let length = input |> Processor.getall |> Seq.length
-    let prue = input |> Processor.getcomb
+    let prue = (input.Length, 4) |> Processor.getcomb
     Assert.AreEqual(prue, length)
