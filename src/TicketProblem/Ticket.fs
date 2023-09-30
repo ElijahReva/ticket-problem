@@ -4,8 +4,6 @@ open Parser
 open Processor
 open System
 open System.Collections.Generic
-open System.Threading
-open System.Threading.Tasks
 open TicketProblem
 open System.Reactive.Linq
 

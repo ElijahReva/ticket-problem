@@ -46,7 +46,7 @@
             BorderBrush="DarkGray"
             BorderThickness="2"
             CornerRadius="4">
-            <ListBox ItemsSource="{Binding Output}" />
+            <ListBox ItemsSource="{Binding OutputObs}" />
         </Border>
 
         <StackPanel

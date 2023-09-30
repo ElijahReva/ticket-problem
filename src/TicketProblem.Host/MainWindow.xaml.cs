@@ -9,10 +9,9 @@
     {
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             this.DataContext = new MainViewModel();
         }
-
         private void LaunchOnGitHub(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://github.com/ElijahReva/ticket-problem");
