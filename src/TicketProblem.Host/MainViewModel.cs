@@ -2,21 +2,25 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Linq;
+    using System.Reactive;
     using System.Reactive.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
-    using System.Windows.Controls;
     using System.Windows.Threading;
+    using DynamicData;
     using MahApps.Metro.Controls.Dialogs;
     using ReactiveUI;
+    using TicketProblem;
 
     public class MainViewModel : ReactiveObject
     {
         private readonly ITicketChecker checker = new TicketChecker();
         private readonly IDialogCoordinator dialogs = DialogCoordinator.Instance;
+        private readonly SourceList<string> outputs = new SourceList<string>();
         private readonly ObservableAsPropertyHelper<int> count;
         private readonly ObservableAsPropertyHelper<int> totalCombintaions;
         private readonly ObservableAsPropertyHelper<TimeSpan> elapsed;
@@ -31,6 +35,12 @@
 
         public MainViewModel()
         {
+            var disposable = outputs
+                .Connect() // make the source an observable change set
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _outputObs)
+                .Subscribe();
+
             var canProcess = this.WhenAnyValue(vm => vm.Number, n => n != 0 && n >= this.expected);
 
             this.ComputeCommandSync = ReactiveCommand.Create(this.Load, canProcess);
@@ -48,7 +58,7 @@
             this.CancelCommand =
                 ReactiveCommand.Create(() => { this.cts.Cancel(); });
 
-            this.count = this.Output.CountChanged.ToProperty(this, vm => vm.Count);
+            this.count = this.outputs.CountChanged.ToProperty(this, vm => vm.Count);
             this.elapsed = this.CreateTimer().ToProperty(this, vm => vm.Elapsed);
 
             this.totalCombintaions = this.WhenAnyValue(vm => vm.Number)
@@ -57,17 +67,18 @@
                 .ToProperty(this, vm => vm.TotalCombinations);
         }
 
-        public ReactiveCommand ComputeCommandSync { get; }
+        public ReactiveCommand<Unit, Unit> ComputeCommandSync { get; }
 
-        public ReactiveCommand ComputeCommandAsync { get; }
+        public ReactiveCommand<Unit, Unit> ComputeCommandAsync { get; }
 
-        public ReactiveCommand ComputeParallel { get; }
+        public ReactiveCommand<Unit, Unit> ComputeParallel { get; }
 
-        public ReactiveCommand ComputeAsObservable { get; }
+        public ReactiveCommand<Unit, Task> ComputeAsObservable { get; }
 
-        public ReactiveCommand CancelCommand { get; }
+        public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
-        public ReactiveList<string> Output { get; } = new ReactiveList<string>();
+        public ReadOnlyObservableCollection<string> _outputObs;
+        public ReadOnlyObservableCollection<string> OutputObs => _outputObs;
 
         public TimeSpan Elapsed => this.elapsed.Value;
 
@@ -89,20 +100,13 @@
 
         private void Load()
         {
+            this.outputs.Clear();
             this.sw.Restart();
             this.CheckStopwatch?.Invoke(null, null);
 
             var result = this.checker.IsLucky(this.number.ToString(), this.expected).ToArray();
 
-
-            using (this.Output.SuppressChangeNotifications())
-            {
-                this.Output.Clear();
-                foreach (var expression in result)
-                {
-                    this.Output.Add(expression);
-                }
-            }
+            this.outputs.AddRange(result);
 
             this.sw.Stop();
             this.CheckStopwatch?.Invoke(null, null);
@@ -122,7 +126,7 @@
             controller.Canceled += (sender, args) => this.cts.Cancel();
             controller.SetIndeterminate();
 
-            this.Output.Clear();
+            this.outputs.Clear();
 
             this.timer.Start();
             this.sw.Restart();
@@ -141,7 +145,7 @@
                         {
                             DispatchService.Invoke(() =>
                             {
-                                this.Output.Add(expr);
+                                this.outputs.Add(expr);
                                 controller.SetProgress(i++);
                                 controller.SetMessage($"Expressions founded: {i}");
                             });
@@ -177,7 +181,7 @@
             controller.Canceled += (sender, args) => this.cts.Cancel();
             controller.SetIndeterminate();
 
-            this.Output.Clear();
+            this.outputs.Clear();
 
 
             await Task.Run(async () =>
@@ -199,7 +203,7 @@
                                 {
                                     DispatchService.Invoke(() =>
                                     {
-                                        this.Output.Add(expr);
+                                        this.outputs.Add(expr);
                                         controller.SetProgress(i++);
                                         controller.SetMessage($"Expressions founded: {i}");
                                     });
@@ -244,10 +248,10 @@
             var controller = await this.dialogs.ShowProgressAsync(this, "Processing", "Generating all expressions", true, mySettings);
             controller.Canceled += (sender, args) => this.cts.Cancel();
             controller.Minimum = 0;
-            controller.Maximum = this.TotalCombinations;
+            controller.Maximum = this.TotalCombinations + 10;
             var j = 0;
 
-            this.Output.Clear();
+            this.outputs.Clear();
 
             this.timer.Start();
             this.sw.Restart();
@@ -261,7 +265,7 @@
                 .Subscribe(
                     i =>
                     {
-                        this.Output.Add(i);
+                        this.outputs.Add(i);
                         controller.SetProgress(j++);
                         controller.SetMessage($"Expressions founded: {j}");
                     },
@@ -274,7 +278,7 @@
                     });
         }
 
-        private void HandleError(Exception ex) => this.Output.Add(ex.ToString());
+        private void HandleError(Exception ex) => this.outputs.Add(ex.ToString());
 
         private IObservable<TimeSpan> CreateTimer() => Observable
             .FromEventPattern(

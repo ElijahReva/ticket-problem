@@ -1,4 +1,4 @@
-module TicketProblem.Tests
+﻿module TicketProblem.Tests
 
 open TicketProblem
 open NUnit.Framework
