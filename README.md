@@ -1,5 +1,5 @@
 # Lucky ticket checker
-[![Build status](https://ci.appveyor.com/api/projects/status/1gq6mkaklakw6cth/branch/master?svg=true)](https://ci.appveyor.com/project/ElijahReva/ticket-problem/branch/master)
+[![.NET Core Desktop](https://github.com/ElijahReva/ticket-problem/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/ElijahReva/ticket-problem/actions/workflows/dotnet-desktop.yml)
 
 This app can be used to determine whenever current ticket nuber is lucky one.
 
